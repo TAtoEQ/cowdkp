@@ -110,8 +110,8 @@ void Auction::update(float dt) noexcept
 	{
 		std::string bidFlagStr = "";
 		if ((winningBid.flags & BidFlags::ra) == BidFlags::ra) bidFlagStr += " ra";
-		if ((winningBid.flags & BidFlags::sub20) == BidFlags::sub20) bidFlagStr += " app";
-		if ((winningBid.flags & BidFlags::app) == BidFlags::app) bidFlagStr += " <20";
+		if ((winningBid.flags & BidFlags::sub20) == BidFlags::sub20) bidFlagStr += " <20";
+		if ((winningBid.flags & BidFlags::app) == BidFlags::app) bidFlagStr += " app";
 
 		switch (state)
 		{
