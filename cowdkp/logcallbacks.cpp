@@ -37,6 +37,7 @@ void onBid(const std::smatch& match)
 
 void onStartBid(const std::smatch& match)
 {
+	if (!settings::isMod(match.str(1))) return;
 	std::string link = Auction::addItemToQueue(match.str(1), match.str(2));
 	if (!link.empty())
 	{
@@ -52,6 +53,7 @@ void onStartBid(const std::smatch& match)
 
 void onPause(const std::smatch& match)
 {
+	if (!settings::isMod(match.str(1))) return;
 	std::string name = match.str(1);
 	bool pause = match.str(2) == "pause";
 	Auction::pauseBids(pause);

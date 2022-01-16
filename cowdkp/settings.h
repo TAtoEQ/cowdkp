@@ -15,6 +15,8 @@ public:
 	static inline float auctionBidTimeInc = 3;
 	static inline float auctionGoingTime = 5;
 	static inline std::vector<std::string> bidChannels;
+	static inline std::vector<std::string> mods;
 
 	static bool load() noexcept;
+	static bool isMod(const std::string& name) noexcept;
 };

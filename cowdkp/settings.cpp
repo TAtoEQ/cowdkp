@@ -34,6 +34,7 @@ bool settings::load() noexcept
 			else if (key == "auction_bid_time_increment") settings::auctionBidTimeInc = std::stof(value);
 			else if (key == "auction_going_time") settings::auctionGoingTime = std::stof(value);
 			else if (key == "bid_channel") settings::bidChannels.push_back(value);
+			else if (key == "mod") settings::mods.push_back(value);
 		}
 	}
 	catch (const std::exception& e)
@@ -42,4 +43,9 @@ bool settings::load() noexcept
 		return false;
 	}
 	return true;
+}
+
+bool settings::isMod(const std::string& name) noexcept
+{
+	return std::find(mods.cbegin(), mods.cend(), name) != mods.cend();
 }
