@@ -166,15 +166,18 @@ void Auction::update(float dt) noexcept
 			case AuctionState::sold:
 			{
 				std::string msg;
-				if (winningBid.bid == 0)
+				if ((settings::verbose & Verbosity::winner) == Verbosity::winner )
 				{
-					msg = fmt::format(";t {} {} banked.", item.starter, item.link, winningBid.name, winningBid.bid);
+					if (winningBid.bid == 0)
+					{
+						msg = fmt::format(";t {} {} banked.", item.starter, item.link, winningBid.name, winningBid.bid);
+					}
+					else
+					{
+						msg = fmt::format(";t {} {} won by {} for {} dkp.", item.starter, item.link, winningBid.name, winningBid.bid);
+					}
+					Game::hookedCommandFunc(0, 0, 0, msg.c_str());
 				}
-				else
-				{
-					msg = fmt::format(";t {} {} won by {} for {} dkp.", item.starter, item.link, winningBid.name, winningBid.bid);
-				}
-				Game::hookedCommandFunc(0, 0, 0, msg.c_str());
 
 				if (winningBid.bid > 0)
 				{

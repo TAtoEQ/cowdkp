@@ -28,13 +28,20 @@ bool settings::load() noexcept
 			std::getline(lineSteam, key, '=');
 			std::getline(lineSteam, value, '\n');
 
-			if (key == "character") settings::character = value;
+			if (key[0] == '#') continue;
+			else if (key == "character") settings::character = value;
 			else if (key == "server") settings::server = value;
 			else if (key == "auction_time") settings::auctionTime = std::stof(value);
 			else if (key == "auction_bid_time_increment") settings::auctionBidTimeInc = std::stof(value);
 			else if (key == "auction_going_time") settings::auctionGoingTime = std::stof(value);
 			else if (key == "bid_channel") settings::bidChannels.push_back(value);
 			else if (key == "mod") settings::mods.push_back(value);
+			else if (key == "verbose")
+			{
+				if (value == "status") settings::verbose = settings::verbose | Verbosity::status;
+				else if (value == "error") settings::verbose = settings::verbose | Verbosity::error;
+				else if (value == "winner") settings::verbose = settings::verbose | Verbosity::winner;
+			}
 		}
 	}
 	catch (const std::exception& e)

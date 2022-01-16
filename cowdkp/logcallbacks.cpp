@@ -43,11 +43,17 @@ void onStartBid(const std::smatch& match)
 	{
 		auto pos = Auction::itemsInQueue();
 		fmt::print("Adding item to queue {} {}. ({})\n", match.str(1), match.str(2), pos);
-		Game::hookedCommandFunc(0, 0, 0, fmt::format(";t {} Added {} to queue. ({})", match.str(1), link, pos).c_str());
+		if ((settings::verbose & Verbosity::status) == Verbosity::status)
+		{
+			Game::hookedCommandFunc(0, 0, 0, fmt::format(";t {} Added {} to queue. ({})", match.str(1), link, pos).c_str());
+		}
 	}
 	else
 	{
-		Game::hookedCommandFunc(0, 0, 0, fmt::format(";t {} Unable to find link for {}.", match.str(1), match.str(2)).c_str());
+		if ((settings::verbose & Verbosity::error) == Verbosity::error)
+		{
+			Game::hookedCommandFunc(0, 0, 0, fmt::format(";t {} Unable to find link for {}.", match.str(1), match.str(2)).c_str());
+		}
 	}
 }
 
@@ -61,5 +67,6 @@ void onPause(const std::smatch& match)
 
 void onCancel(const std::smatch& match)
 {
+	if (!settings::isMod(match.str(1))) return;
 	Auction::cancelAuctionInChannel(match.str(2));
 }
