@@ -33,8 +33,6 @@ int Game::findPattern(char* addr, int size, const char* pattern) noexcept
 
 void __fastcall Game::hookedCommandFunc(int eq, void* unk, int* p, const char* s)
 {
-    //fmt::print(logFile, "CommandFunc {:x} {:x}\n", (int)eq, (int)p);
-    //fflush(logFile);
     if (eq == 0 || p == nullptr)
     {
         int base = (int)GetModuleHandle(nullptr);
@@ -65,8 +63,6 @@ void __fastcall Game::hookedItemLinkFunc(void* item, void* unk, char* buffer, in
 
 int __fastcall Game::hookedRaidGroupFunc(void* window, void* unk, int* a, int b, int* c)
 {
-    //fmt::print(logFile, "hookedRaid {:x} {:x}\n", (int)window, (int)a);
-    //fflush(logFile);
     if (window == nullptr || a == nullptr)
     {
         return 0;
@@ -122,7 +118,7 @@ void Game::hook(const std::vector<std::string>& funcs) noexcept
             }
         }
     }
-    catch (const std::exception& e)
+    catch (const std::exception&)
     {
     }
 }
@@ -144,7 +140,6 @@ std::string Game::findLinkForItem(const std::string& item) noexcept
     for (uint64_t addr = 0; addr < 0x6fffffffULL;)
     {
         memset(&info, 0, sizeof(info));
-        SIZE_T length;
         auto written = VirtualQueryEx((HANDLE)-1, (LPCVOID)addr, &info, sizeof(info));
         if (written == 0)
         {
@@ -175,20 +170,6 @@ std::string Game::findLinkForItem(const std::string& item) noexcept
                     }
                 }
             }
-            
-           /* for (auto start = (uint64_t)info.BaseAddress; start < (uint64_t)info.BaseAddress + info.RegionSize - 93; ++start)
-            {
-                char c = *(char*)start;
-                if (c == '\x12')
-                {
-                    char* nameAddr = (char*)(start + 92);
-                    char* x12Addr = nameAddr + item.length();
-                    if (*x12Addr == '\x12' && item == std::string(nameAddr, item.length()))
-                    {
-                        return std::string((char*)start, item.length() + 93);
-                    }
-                }
-            }*/
         }
         addr = (uint64_t)info.BaseAddress + info.RegionSize;
     }
