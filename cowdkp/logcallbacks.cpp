@@ -58,3 +58,8 @@ void onPause(const std::smatch& match)
 	bool pause = match.str(2) == "pause";
 	Auction::pauseBids(pause);
 }
+
+void onCancel(const std::smatch& match)
+{
+	Auction::cancelAuctionInChannel(match.str(2));
+}

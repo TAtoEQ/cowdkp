@@ -57,7 +57,7 @@ bool Bid::isValid(const Bid& o) const noexcept
 Auction::Auction(const Item& item, const std::string& channel)  noexcept
 	: item(item), channel(channel)
 {
-	std::string msg = fmt::format("{} {} bids go ({})", channelToText[channel], item.link, item.starter);
+	std::string msg = fmt::format("{} {} bids go ({})", chatTextForChannel(channel), item.link, item.starter);
 	Game::hookedCommandFunc(0, 0, 0, msg.c_str());
 }
 
@@ -121,11 +121,11 @@ void Auction::update(float dt) noexcept
 				std::string msg;
 				if (winningBid.bid == 0)
 				{
-					msg = fmt::format("{} {} bank once", channelToText[channel], item.link);
+					msg = fmt::format("{} {} bank once", chatTextForChannel(channel), item.link);
 				}
 				else
 				{
-					msg = fmt::format("{} {} {} {}{} once", channelToText[channel], item.link, winningBid.name, winningBid.bid, bidFlagStr);
+					msg = fmt::format("{} {} {} {}{} once", chatTextForChannel(channel), item.link, winningBid.name, winningBid.bid, bidFlagStr);
 				}
 				Game::hookedCommandFunc(0, 0, 0, msg.c_str());
 				timeLeft = settings::auctionGoingTime;
@@ -137,11 +137,11 @@ void Auction::update(float dt) noexcept
 				std::string msg;
 				if (winningBid.bid == 0)
 				{
-					msg = fmt::format("{} {} bank twice", channelToText[channel], item.link);
+					msg = fmt::format("{} {} bank twice", chatTextForChannel(channel), item.link);
 				}
 				else
 				{
-					msg = fmt::format("{} {} {} {}{} twice", channelToText[channel], item.link, winningBid.name, winningBid.bid, bidFlagStr);
+					msg = fmt::format("{} {} {} {}{} twice", chatTextForChannel(channel), item.link, winningBid.name, winningBid.bid, bidFlagStr);
 				}
 				Game::hookedCommandFunc(0, 0, 0, msg.c_str());
 				timeLeft = settings::auctionGoingTime;
@@ -153,11 +153,11 @@ void Auction::update(float dt) noexcept
 				std::string msg;
 				if (winningBid.bid == 0)
 				{
-					msg = fmt::format("{} {} bank sold", channelToText[channel], item.link);
+					msg = fmt::format("{} {} bank sold", chatTextForChannel(channel), item.link);
 				}
 				else
 				{
-					msg = fmt::format("{} {} {} {} sold", channelToText[channel], item.link, winningBid.name, winningBid.bid);
+					msg = fmt::format("{} {} {} {} sold", chatTextForChannel(channel), item.link, winningBid.name, winningBid.bid);
 				}
 				Game::hookedCommandFunc(0, 0, 0, msg.c_str());
 				timeLeft = 3;
@@ -178,7 +178,7 @@ void Auction::update(float dt) noexcept
 
 				if (winningBid.bid > 0)
 				{
-					msg = fmt::format("{} {}-{}@{} GRATSS ({})", channelToText[channel], item.link, winningBid.name, winningBid.bid, item.starter);
+					msg = fmt::format("{} {}-{}@{} GRATSS ({})", chatTextForChannel(channel), item.link, winningBid.name, winningBid.bid, item.starter);
 					Game::hookedCommandFunc(0, 0, 0, msg.c_str());
 				}
 				state = AuctionState::expired;
@@ -261,5 +261,41 @@ void Auction::updateAuctions(float dt) noexcept
 			}
 		}
 		if (stop) break;
+	}
+}
+
+std::string Auction::chatTextForChannel(const std::string& str) noexcept
+{
+	auto it = channelToText.find(str);
+	if (it != channelToText.end())
+	{
+		return it->second;
+	}
+	std::string s = "/chat #";
+	return s + str;
+}
+
+void Auction::cancelAuctionInChannel(const std::string& channel) noexcept
+{
+	std::scoped_lock sl{ lock };
+	if (channel == "all")
+	{
+		for (auto& a : auctions)
+		{
+			std::string msg = fmt::format("{} {} canceled.", chatTextForChannel(a.channel), a.item.link);
+			Game::hookedCommandFunc(0, 0, 0, msg.c_str());
+		}
+		auctions.clear();
+		q.clear();
+	}
+	else
+	{
+		Auction* a = auctionForChannel(channel);
+		if (a)
+		{
+			std::string msg = fmt::format("{} {} canceled.", chatTextForChannel(a->channel), a->item.link);
+			Game::hookedCommandFunc(0, 0, 0, msg.c_str());
+			auctions.erase(std::remove_if(auctions.begin(), auctions.end(), [a](const auto& auc) {return a == &auc; }));
+		}
 	}
 }

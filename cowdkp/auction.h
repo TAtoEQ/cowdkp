@@ -76,23 +76,21 @@ public:
 		{"say", "/say"},
 		{"auction", "/auc"},
 		{"shout", "/shout"},
-		{"ooc", "/ooc"},
+		{"out of character", "/ooc"},
 		{"guild", "/gu"},
 		{"raid", "/rs"},
-		{"group", "/g"},
-		{"ccbid1", "/chat #ccbid1"},
-		{"ccbid2", "/chat #ccbid2"},
-		{"ccbid3", "/chat #ccbid3"},
-		{"ccbid4", "/chat #ccbid4"}
+		{"group", "/g"}
 	};
 
 	Auction(const Item& item, const std::string& channel) noexcept;
 	bool addBid(const Bid& b) noexcept;
 
+	static std::string chatTextForChannel(const std::string& str) noexcept;
 	static Auction* auctionForChannel(const std::string& channel) noexcept;
 	static std::string addItemToQueue(const std::string& starter, const std::string& item) noexcept;
 	static void updateAuctions(float dt) noexcept;
 	static std::string getOpenChannel() noexcept;
 	static size_t itemsInQueue() noexcept { return q.size(); }
 	static void pauseBids(bool paused) noexcept;
+	static void cancelAuctionInChannel(const std::string& channel) noexcept;
 };

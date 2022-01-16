@@ -11,9 +11,13 @@ void onStartBid(const std::smatch& match);
 const inline std::regex pauseBidsRe{ R"x(^.{26} ([A-Z][a-z]+) tells you, '(pause|resume)'$)x" };
 void onPause(const std::smatch& match);
 
+const inline std::regex cancelRe{ R"x(^.{26} ([A-Z][a-z]+) tells you, 'cancel (.+)'$)x" };
+void onCancel(const std::smatch& match);
+
 const inline std::vector<std::pair<std::regex, LogCallbackType>> logCallbacks =
 {
 	{bidRe, onBid},
 	{startBidRe, onStartBid},
-	{pauseBidsRe, onPause}
+	{pauseBidsRe, onPause},
+	{cancelRe, onCancel}
 };
