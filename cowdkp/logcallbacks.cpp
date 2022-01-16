@@ -13,6 +13,7 @@ void onBid(const std::smatch& match)
 
 	std::string name = match.str(1);
 	if (name == "You") name = settings::character;
+	if (!match.str(10).empty()) name = match.str(10);
 	std::string channel = match.str(3);
 	std::string bid = match.str(5);
 

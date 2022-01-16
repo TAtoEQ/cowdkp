@@ -2,7 +2,7 @@
 #include <regex>
 #include "logparser.h"
 
-const inline std::regex bidRe{ R"x(^.{26} ([A-Z][a-z]+) (tells?|says?)? ?([ A-Za-z\d]+)(:\d+)?, '(\d+) ?(ra|<20|app)? ?(ra|<20|app)? ?(ra|<20|app)?'$)x" };
+const inline std::regex bidRe{ R"x(^.{26} ([A-Z][a-z]+) (tells?|says?)? ?([ A-Za-z\d]+)(:\d+)?, '(\d+) ?(ra|<20|app)? ?(ra|<20|app)? ?(ra|<20|app)? ?(\(([A-Za-z]+)\))?'$)x" };
 void onBid(const std::smatch& match);
 
 const inline std::regex startBidRe{ R"x(^.{26} ([A-Z][a-z]+) tells you, 'start (.+)'$)x" };
