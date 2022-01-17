@@ -217,7 +217,10 @@ void Auction::retractBid(const std::string& name) noexcept
 {
 	if (bids.empty() || state == AuctionState::sold || state == AuctionState::expired) return;
 	std::string currentWinner = bids[bids.size() - 1].name;
-	bids.erase(std::remove_if(bids.begin(), bids.end(), [&name](const auto& b) { return b.name == name; }), bids.end());
+	auto removeBidsWithName = [&name](const auto& b) { return b.name == name; };
+	bids.erase(std::remove_if(bids.begin(), bids.end(), removeBidsWithName), bids.end());
+	reservedBids.erase(std::remove_if(reservedBids.begin(), reservedBids.end(), removeBidsWithName), reservedBids.end());
+
 	if (bids.size() > 1)
 	{
 		for (size_t i = bids.size() - 1; i > 0; --i)
@@ -285,6 +288,7 @@ void Auction::updateAuctions(float dt) noexcept
 	{
 		a.update(dt);
 	}
+	auto removeBidsWithName = 
 	auctions.erase(std::remove_if(auctions.begin(), auctions.end(), [](const auto& a) { return a.state == AuctionState::expired; }), auctions.end());
 	
 	while (auctions.size() < settings::bidChannels.size() && !q.empty())
