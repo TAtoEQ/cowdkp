@@ -37,11 +37,19 @@ inline BidFlags operator&(BidFlags a, BidFlags b)
 
 struct Bid
 {
+	static inline std::vector<std::pair<int, int>> minIncs =
+	{
+		{1000, 100},
+		{500, 50},
+		{250, 25},
+		{0, 10}
+	};
+
 	std::string name;
 	int bid = 0;
 	BidFlags flags = BidFlags::none;
 	std::chrono::high_resolution_clock::time_point time = std::chrono::high_resolution_clock::now();
-	bool isValid(const Bid& o) const noexcept;
+	bool isValid(const Bid& winning) const noexcept;
 };
 
 struct Item
@@ -63,7 +71,7 @@ private:
 	std::string channel;
 	AuctionState state = AuctionState::open;
 	int currentBid = 0;
-	Bid winningBid;
+	std::vector<Bid> bids{ };
 	float timeLeft = settings::auctionTime;
 	
 	void update(float dt) noexcept;
@@ -84,6 +92,7 @@ public:
 
 	Auction(const Item& item, const std::string& channel) noexcept;
 	bool addBid(const Bid& b) noexcept;
+	void retractBid(const std::string& name) noexcept;
 
 	static std::string chatTextForChannel(const std::string& str) noexcept;
 	static Auction* auctionForChannel(const std::string& channel) noexcept;

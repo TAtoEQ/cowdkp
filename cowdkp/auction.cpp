@@ -4,26 +4,19 @@
 #include "settings.h"
 #include <fmt/core.h>
 
-bool Bid::isValid(const Bid& o) const noexcept
+bool Bid::isValid(const Bid& winning) const noexcept
 {
 	// main > ra > sub20 = app
-	static std::vector<std::pair<int, int>> minIncs =
-	{
-		{1000, 100},
-		{500, 50},
-		{250, 25},
-		{0, 10}
-	};
 
 	bool none = flags == BidFlags::none;
 	bool ra = (flags & BidFlags::ra) == BidFlags::ra;
 	bool app = (flags & BidFlags::app) == BidFlags::app;
 	bool sub20 = (flags & BidFlags::sub20) == BidFlags::sub20;
 
-	bool none2 = o.flags == BidFlags::none;
-	bool ra2 = (o.flags & BidFlags::ra) == BidFlags::ra;
-	bool app2 = (o.flags & BidFlags::app) == BidFlags::app;
-	bool sub202 = (o.flags & BidFlags::sub20) == BidFlags::sub20;
+	bool none2 = winning.flags == BidFlags::none;
+	bool ra2 = (winning.flags & BidFlags::ra) == BidFlags::ra;
+	bool app2 = (winning.flags & BidFlags::app) == BidFlags::app;
+	bool sub202 = (winning.flags & BidFlags::sub20) == BidFlags::sub20;
 
 	//if (name == o.name) return false;
 
@@ -35,7 +28,7 @@ bool Bid::isValid(const Bid& o) const noexcept
 	if (ra2) lootPrio2 = 2;
 	else if (app2 || sub202) lootPrio2 = 1;
 
-	if (lootPrio2 > lootPrio && o.bid > 0) return false;
+	if (lootPrio2 > lootPrio && winning.bid > 0) return false;
 	else if (!ra && bid < 100) return false;
 	else if (ra && bid < 20) return false;
 	else if (lootPrio > lootPrio2) return true;
@@ -43,14 +36,14 @@ bool Bid::isValid(const Bid& o) const noexcept
 	int minInc = 0;
 	for (const auto [amount, inc] : minIncs)
 	{
-		if (o.bid >= amount)
+		if (winning.bid >= amount)
 		{
 			minInc = inc;
 			break;
 		}
 	}
 
-	if (bid >= o.bid + minInc) return true;
+	if (bid >= winning.bid + minInc) return true;
 	return false;
 }
 
@@ -109,6 +102,7 @@ void Auction::update(float dt) noexcept
 	if (timeLeft <= 0.0f)
 	{
 		std::string bidFlagStr = "";
+		const Bid& winningBid = (!bids.empty()) ? bids[bids.size() - 1] : Bid();
 		if ((winningBid.flags & BidFlags::ra) == BidFlags::ra) bidFlagStr += " ra";
 		if ((winningBid.flags & BidFlags::sub20) == BidFlags::sub20) bidFlagStr += " <20";
 		if ((winningBid.flags & BidFlags::app) == BidFlags::app) bidFlagStr += " app";
@@ -194,11 +188,49 @@ bool Auction::addBid(const Bid& b) noexcept
 {
 	std::scoped_lock sl{ lock };
 	if (state == AuctionState::sold || state == AuctionState::expired) return false;
+	const Bid& winningBid = (!bids.empty()) ? bids[bids.size() - 1] : Bid();
 	if (!b.isValid(winningBid)) return false;
-	winningBid = b;
+	bids.push_back(b);
 	state = AuctionState::open;
 	timeLeft = std::min(timeLeft + settings::auctionBidTimeInc, settings::auctionTime);
 	return true;
+}
+
+void Auction::retractBid(const std::string& name) noexcept
+{
+	if (bids.empty() || state == AuctionState::sold || state == AuctionState::expired) return;
+	std::string currentWinner = bids[bids.size() - 1].name;
+	bids.erase(std::remove_if(bids.begin(), bids.end(), [&name](const auto& b) { return b.name == name; }), bids.end());
+	if (bids.size() > 1)
+	{
+		for (size_t i = bids.size() - 1; i > 0; --i)
+		{
+			if (bids[i].name == bids[i - 1].name)
+			{
+				bids.pop_back();
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+	const Bid& newWinner = (!bids.empty()) ? bids[bids.size() - 1] : Bid();
+	std::string msg;
+	if (newWinner.bid == 0)
+	{
+		msg = fmt::format("{} {} bids at 0", chatTextForChannel(channel), item.link);
+	}
+	else
+	{
+		if (currentWinner != newWinner.name)
+		{
+			state = AuctionState::open;
+		}
+		msg = fmt::format("{} {} bids at {} by {}", chatTextForChannel(channel), item.link, newWinner.bid, newWinner.name);
+	}
+	timeLeft = settings::auctionTime;
+	Game::hookedCommandFunc(0, 0, 0, msg.c_str());
 }
 
 void Auction::removeAuction(Auction& a) noexcept

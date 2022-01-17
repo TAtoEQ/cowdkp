@@ -71,3 +71,15 @@ void onCancel(const std::smatch& match)
 	if (!settings::isMod(match.str(1))) return;
 	Auction::cancelAuctionInChannel(match.str(2));
 }
+
+void onRetract(const std::smatch& match)
+{
+	std::string name = match.str(1);
+	if (name == "You") name = settings::character;
+	std::string channel = match.str(3);
+	Auction* a = Auction::auctionForChannel(channel);
+	if (a)
+	{
+		a->retractBid(name);
+	}
+}

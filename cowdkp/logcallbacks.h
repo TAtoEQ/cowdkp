@@ -14,10 +14,14 @@ void onPause(const std::smatch& match);
 const inline std::regex cancelRe{ R"x(^.{26} ([A-Z][a-z]+) tells you, 'cancel (.+)'$)x" };
 void onCancel(const std::smatch& match);
 
+const inline std::regex retractRe{ R"x(^.{26} ([A-Z][a-z]+) (tells?|says?)? ?([ A-Za-z\d]+)(:\d+)?, 'retract'$)x" };
+void onRetract(const std::smatch& match);
+
 const inline std::vector<std::pair<std::regex, LogCallbackType>> logCallbacks =
 {
 	{bidRe, onBid},
 	{startBidRe, onStartBid},
 	{pauseBidsRe, onPause},
-	{cancelRe, onCancel}
+	{cancelRe, onCancel},
+	{retractRe, onRetract}
 };
