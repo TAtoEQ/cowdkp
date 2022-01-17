@@ -71,7 +71,9 @@ private:
 	std::string channel;
 	AuctionState state = AuctionState::open;
 	int currentBid = 0;
-	std::vector<Bid> bids{ };
+	std::vector<Bid> bids;
+	std::vector<Bid> reservedBids;
+
 	float timeLeft = settings::auctionTime;
 	
 	void update(float dt) noexcept;
@@ -91,7 +93,7 @@ public:
 	};
 
 	Auction(const Item& item, const std::string& channel) noexcept;
-	bool addBid(const Bid& b) noexcept;
+	bool addBid(const Bid& b, bool checkReserve=true) noexcept;
 	void retractBid(const std::string& name) noexcept;
 
 	static std::string chatTextForChannel(const std::string& str) noexcept;

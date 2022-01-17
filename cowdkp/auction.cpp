@@ -184,12 +184,29 @@ void Auction::update(float dt) noexcept
 	}
 }
 
-bool Auction::addBid(const Bid& b) noexcept
+bool Auction::addBid(const Bid& b, bool checkReserve) noexcept
 {
 	std::scoped_lock sl{ lock };
 	if (state == AuctionState::sold || state == AuctionState::expired) return false;
 	const Bid& winningBid = (!bids.empty()) ? bids[bids.size() - 1] : Bid();
 	if (!b.isValid(winningBid)) return false;
+	if (checkReserve)
+	{
+		for (auto it = reservedBids.rbegin(); it != reservedBids.rend(); ++it)
+		{
+			if (!b.isValid(*it))
+			{
+				if (addBid(*it, false))
+				{
+					std::string msg = fmt::format("{} {} bids at {} by {}", chatTextForChannel(channel), item.link, it->bid, it->name);
+					Game::hookedCommandFunc(0, 0, 0, msg.c_str());
+				}
+				reservedBids.erase(std::next(it).base());
+				return false;
+			}
+		}
+	}
+
 	bids.push_back(b);
 	state = AuctionState::open;
 	timeLeft = std::min(timeLeft + settings::auctionBidTimeInc, settings::auctionTime);
@@ -207,6 +224,7 @@ void Auction::retractBid(const std::string& name) noexcept
 		{
 			if (bids[i].name == bids[i - 1].name)
 			{
+				reservedBids.push_back(bids.back());
 				bids.pop_back();
 			}
 			else
